@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: buyer-order
+  datasource:
+    url: jdbc:mysql://localhost:3306/buyer_order?characterEncoding=utf8&serverTimezone=UTC
+    name: buyer_order
+    driver-class-name: com.mysql.jdbc.Driver
+    initial-size: 10
+    max-active: 250
+    max-wait: 1000
+    min-idle: 10
+    test-on-borrow: true
+    validation-query: SELECT 1
+    username: root
+    password: 123456
+  flyway:
+    locations: classpath:/db/migration
+    enabled: true
+    cleanDisabled: true
+    baselineOnMigrate: true
+    baselineVersion: 1
+    outOfOrder: true
+server:
+  port: 8080

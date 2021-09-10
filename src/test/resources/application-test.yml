@@ -1,0 +1,30 @@
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  jpa:
+    show-sql: true
+    hibernate:
+      use-new-id-generator-mappings: false
+    properties:
+      hibernate:
+        use_sql_comments: true
+        format_sql: true
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    username: root
+    password: root
+    hikari:
+      maximum-pool-size: 100
+      minimum-idle: 50
+  boot:
+    mariadb4j:
+      databaseName: buyer_order
+  flyway:
+    locations: classpath:/db/migration
+    enabled: true
+    cleanDisabled: true
+    baselineOnMigrate: true
+    baselineVersion: 1
+    outOfOrder: true
+  main:
+    allow-bean-definition-overriding: true
