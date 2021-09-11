@@ -1,14 +1,70 @@
 package com.eatfull.buyerorder.service;
 
+import com.alibaba.fastjson.JSONObject;
+import com.eatfull.buyerorder.enums.MessageSendStatus;
+import com.eatfull.buyerorder.enums.MessageType;
 import com.eatfull.buyerorder.enums.OrderStatus;
+import com.eatfull.buyerorder.infrastructure.entity.MessageHistory;
+import com.eatfull.buyerorder.infrastructure.entity.Order;
+import com.eatfull.buyerorder.infrastructure.entity.OrderItem;
+import com.eatfull.buyerorder.infrastructure.exceptions.OrderCancelFailedException;
+import com.eatfull.buyerorder.infrastructure.repository.MessageHistoryRepository;
+import com.eatfull.buyerorder.infrastructure.repository.OrderRepository;
+import com.eatfull.buyerorder.message.MessageSender;
+import com.eatfull.buyerorder.message.dto.OrderCancellationMessage;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+@AllArgsConstructor
 @Service
 public class OrderService {
 
-    public OrderCancellationModel cancelOrder(Long id) {
+    private final OrderRepository orderRepository;
+    private final MessageHistoryRepository messageHistoryRepository;
+    private final MessageSender messageSender;
+
+    public boolean cancelOrder(Long id) {
+        Optional<Order> orderOptional = orderRepository.findById(id);
+        if (!orderOptional.isPresent()) {
+            throw new OrderCancelFailedException("ORDER_NOT_FOUND", "订单不存在");
+        }
+        Order order = orderOptional.get();
+        if (order.getStatus() == OrderStatus.SHIPPING) {
+            throw new OrderCancelFailedException("ORDER_SHIPPING", "已开始配送，不能取消订单");
+        }
+        if (order.getStatus() == OrderStatus.PREPARING && !isPastFoodPreparationTime(order)) {
+            throw new OrderCancelFailedException("FOOD_PREPARATION_NOT_OVERDUE", "备餐未超时，不能取消订单");
+        }
+        if (order.getStatus() == OrderStatus.PREPARING && isPastFoodPreparationTime(order)) {
+            OrderCancellationMessage orderCancellationMessage = OrderCancellationMessage.from(order);
+            boolean sendResult = messageSender.send(orderCancellationMessage);
+            if (!sendResult) {
+                saveMessage(orderCancellationMessage);
+            }
+            order.setStatus(OrderStatus.CANCELED);
+            orderRepository.save(order);
+            return true;
+        }
+        throw new OrderCancelFailedException();
+    }
 
 
-        return OrderCancellationModel.builder().status(OrderStatus.CANCELED).build();
+    private boolean isPastFoodPreparationTime(Order order) {
+        Integer maxFoodPreparationTime = order.getOrderItems().stream()
+                .map(OrderItem::getFoodPreparationTime)
+                .max(Integer::compare)
+                .orElse(0);
+        return LocalDateTime.now().isAfter(order.getAcceptanceOrderTime().plusMinutes(maxFoodPreparationTime));
+    }
+
+    private void saveMessage(OrderCancellationMessage orderCancellationMessage) {
+        messageHistoryRepository.save(MessageHistory.builder()
+                                              .status(MessageSendStatus.SEND_FAIL)
+                                              .type(MessageType.ORDER_CANCELLATION)
+                                              .content(JSONObject.toJSONString(orderCancellationMessage))
+                                              .build());
     }
 }

@@ -2,8 +2,6 @@ package com.eatfull.buyerorder.controller;
 
 
 import com.eatfull.buyerorder.controller.dto.OrderCancellationResponseDto;
-import com.eatfull.buyerorder.enums.OrderStatus;
-import com.eatfull.buyerorder.service.OrderCancellationModel;
 import com.eatfull.buyerorder.service.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,8 +18,8 @@ public class OrderController {
 
     @PostMapping("/orders/{id}/cancellation-confirmation")
     public OrderCancellationResponseDto cancelOrder(@PathVariable("id") Long id) {
-        OrderCancellationModel orderCancellationModel = orderService.cancelOrder(id);
-        if (orderCancellationModel.getStatus() == OrderStatus.CANCELED) {
+        boolean cancelOrder = orderService.cancelOrder(id);
+        if (cancelOrder) {
             return OrderCancellationResponseDto.builder().code("SUCCESS").message("取消订单成功").build();
         }
         return null;
