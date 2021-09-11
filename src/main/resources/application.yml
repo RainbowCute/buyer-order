@@ -6,8 +6,8 @@ spring:
     name: buyer_order
     driver-class-name: com.mysql.jdbc.Driver
     initial-size: 10
-    max-active: 250
-    max-wait: 1000
+    max-active: 50
+    max-wait: 100
     min-idle: 10
     test-on-borrow: true
     validation-query: SELECT 1
@@ -16,9 +16,6 @@ spring:
   flyway:
     locations: classpath:/db/migration
     enabled: true
-    cleanDisabled: true
-    baselineOnMigrate: true
-    baselineVersion: 1
     outOfOrder: true
 server:
   port: 8080
