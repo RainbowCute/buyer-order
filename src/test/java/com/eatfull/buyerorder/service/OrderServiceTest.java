@@ -6,6 +6,7 @@ import com.eatfull.buyerorder.enums.MessageSendStatus;
 import com.eatfull.buyerorder.enums.MessageType;
 import com.eatfull.buyerorder.enums.OrderStatus;
 import com.eatfull.buyerorder.feigns.StockClient;
+import com.eatfull.buyerorder.feigns.dto.ReserveStockResponseDto;
 import com.eatfull.buyerorder.infrastructure.entity.MessageHistory;
 import com.eatfull.buyerorder.infrastructure.entity.OrderItem;
 import com.eatfull.buyerorder.infrastructure.exceptions.OrderCancelFailedException;
@@ -150,7 +151,7 @@ public class OrderServiceTest extends IntegrationTest {
         Mockito.when(stubOrderRepository.save(any())).thenReturn(OrderBuilder.withDefault()
                                                                          .withId(orderId)
                                                                          .build());
-        Mockito.when(stubStockClient.reserve(any())).thenReturn(true);
+        Mockito.when(stubStockClient.reserve(any())).thenReturn(ReserveStockResponseDto.builder().success(true).build());
         OrderModel orderModel = OrderModel.builder().orderItemModels(new ArrayList<>()).build();
 
         Long savedOrderId = orderService.createOrder(orderModel);
@@ -163,7 +164,7 @@ public class OrderServiceTest extends IntegrationTest {
     void should_throw_exception_when_create_order_given_stock_not_enough() {
         StockClient stubStockClient = Mockito.mock(StockClient.class);
         ReflectionTestUtils.setField(orderService, "stockClient", stubStockClient);
-        Mockito.when(stubStockClient.reserve(any())).thenReturn(false);
+        Mockito.when(stubStockClient.reserve(any())).thenReturn(ReserveStockResponseDto.builder().success(false).build());
         OrderModel orderModel = OrderModel.builder().orderItemModels(new ArrayList<>()).build();
 
         OrderCreationFailedException orderCreationFailedException = assertThrows(OrderCreationFailedException.class, () -> orderService.createOrder(orderModel));
