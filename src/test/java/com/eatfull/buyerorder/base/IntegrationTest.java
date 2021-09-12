@@ -28,7 +28,11 @@ public abstract class IntegrationTest {
     @BeforeEach
     protected void setUp() throws Exception {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context).build();
-        truncateDatabaseService.restartIdWith(1, true, null);
+        try {
+            truncateDatabaseService.restartIdWith(1, true, null);
+        } finally {
+            truncateDatabaseService.closeResource();
+        }
         prepareData();
     }
 

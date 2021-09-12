@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import javax.transaction.Transactional;
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,19 +25,22 @@ public class TruncateDatabaseService {
     @Autowired
     private EntityManager entityManager;
 
-    @Transactional
-    public void restartIdWith(int startId, boolean truncate, List<String> tables) throws Exception {
-        List<String> tableNames = new ArrayList<>(tables == null ? emptyList() : tables);
-        if (isEmpty(tableNames)) {
-            DatabaseMetaData metaData = dataSource.getConnection().getMetaData();
-            ResultSet tableList = metaData.getTables(null, null, null, new String[]{"TABLE"});
-            while (tableList.next()) {
-                String tableName = tableList.getString("TABLE_NAME");
-                tableNames.add(tableName);
-            }
-        }
+    private ResultSet tableList;
+    private Connection connection;
 
-        tableNames.remove("labour_rate");
+    @Transactional
+    public void restartIdWith(int startId, boolean truncate, List<String> tables) throws SQLException {
+
+        List<String> tableNames = new ArrayList<>(tables == null ? emptyList() : tables);
+        connection = dataSource.getConnection();
+        DatabaseMetaData metaData = connection.getMetaData();
+        tableList = metaData.getTables(null, null, null, new String[]{"TABLE"});
+        while (tableList.next()) {
+            String tableName = tableList.getString("TABLE_NAME");
+            tableNames.add(tableName);
+        }
+        tableNames.remove("flyway_schema_history");
+
 
         entityManager.createNativeQuery("SET FOREIGN_KEY_CHECKS = 0").executeUpdate();
         tableNames.stream()
@@ -46,10 +51,18 @@ public class TruncateDatabaseService {
                             if (truncate) {
                                 entityManager.createNativeQuery("TRUNCATE TABLE " + tableName).executeUpdate();
                             }
-                            entityManager.createNativeQuery("ALTER TABLE " + tableName
-                                    + " AUTO_INCREMENT = " + startId).executeUpdate();
                         }
                 );
         entityManager.createNativeQuery("SET FOREIGN_KEY_CHECKS = 1").executeUpdate();
+
+    }
+
+    public void closeResource() {
+        try {
+            tableList.close();
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
