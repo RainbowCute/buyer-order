@@ -1,13 +1,21 @@
 package com.eatfull.buyerorder.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.eatfull.buyerorder.base.IntegrationTest;
+import com.eatfull.buyerorder.controller.dto.OrderCreationRequestDto;
+import com.eatfull.buyerorder.controller.dto.OrderItemRequestDto;
 import com.eatfull.buyerorder.infrastructure.exceptions.OrderCancelFailedException;
 import com.eatfull.buyerorder.service.OrderService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+
+import java.math.BigDecimal;
+import java.util.Collections;
 
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -59,5 +67,24 @@ public class OrderControllerTest extends IntegrationTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code", is("ORDER_NOT_FOUND")))
                 .andExpect(jsonPath("$.message", is("订单不存在")));
+    }
+
+    @Test
+    void should_create_order_success_when_create_order_given_proposal_id_and_order_info() throws Exception {
+        Long orderId = 1L;
+        Mockito.when(orderService.createOrder(any())).thenReturn(orderId);
+        OrderCreationRequestDto orderCreationRequestDto = OrderCreationRequestDto.builder()
+                .orderItemDtos(Collections.singletonList(OrderItemRequestDto.builder()
+                                                                 .foodPreparationTime(10)
+                                                                 .price(BigDecimal.valueOf(20))
+                                                                 .quantity(1).build()))
+                .build();
+        String requestJson = JSONObject.toJSONString(orderCreationRequestDto);
+
+        mockMvc.perform(post("/buyer/food-proposals/{id}/order", 1)
+                                .content(requestJson)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.orderId", is(1)));
     }
 }

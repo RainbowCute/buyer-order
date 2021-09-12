@@ -108,7 +108,6 @@ public class OrderServiceTest extends IntegrationTest {
                                                                                                .build()));
         Mockito.when(stubMessageSender.send(any())).thenReturn(true);
 
-
         OrderCancelFailedException orderCancelFailedException = assertThrows(OrderCancelFailedException.class, () -> orderService.cancelOrder(orderId));
         assertEquals("订单不存在", orderCancelFailedException.getMessage());
     }

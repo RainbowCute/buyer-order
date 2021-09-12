@@ -13,6 +13,7 @@ import com.eatfull.buyerorder.infrastructure.repository.OrderRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
@@ -32,7 +33,11 @@ public class OrderRepositoryTest extends IntegrationTest {
                 .withId(1L)
                 .withUserId(1L)
                 .withAcceptanceOrderTime(LocalDateTime.now().minusMinutes(30))
-                .withOrderItems(Collections.singletonList(OrderItem.builder().foodPreparationTime(10).build()))
+                .withOrderItems(Collections.singletonList(OrderItem.builder()
+                                                                  .foodPreparationTime(10)
+                                                                  .price(BigDecimal.valueOf(10))
+                                                                  .quantity(1)
+                                                                  .build()))
                 .withStatus(OrderStatus.CANCELED)
                 .build();
 

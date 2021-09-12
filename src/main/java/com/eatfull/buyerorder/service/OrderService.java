@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.eatfull.buyerorder.enums.MessageSendStatus;
 import com.eatfull.buyerorder.enums.MessageType;
 import com.eatfull.buyerorder.enums.OrderStatus;
+import com.eatfull.buyerorder.feigns.StockClient;
 import com.eatfull.buyerorder.infrastructure.entity.MessageHistory;
 import com.eatfull.buyerorder.infrastructure.entity.Order;
 import com.eatfull.buyerorder.infrastructure.entity.OrderItem;
@@ -12,6 +13,7 @@ import com.eatfull.buyerorder.infrastructure.repository.MessageHistoryRepository
 import com.eatfull.buyerorder.infrastructure.repository.OrderRepository;
 import com.eatfull.buyerorder.message.MessageSender;
 import com.eatfull.buyerorder.message.dto.OrderCancellationMessage;
+import com.eatfull.buyerorder.model.OrderModel;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final MessageHistoryRepository messageHistoryRepository;
     private final MessageSender messageSender;
+    private final StockClient stockClient;
 
     public boolean cancelOrder(Long id) {
         Optional<Order> orderOptional = orderRepository.findById(id);
@@ -67,4 +70,9 @@ public class OrderService {
                                               .content(JSONObject.toJSONString(orderCancellationMessage))
                                               .build());
     }
+
+    public Long createOrder(OrderModel orderModel) {
+        return null;
+    }
+
 }

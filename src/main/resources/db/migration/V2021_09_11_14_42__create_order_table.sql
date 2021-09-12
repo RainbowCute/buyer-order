@@ -13,6 +13,8 @@ create table buyer_order_item
     id                    bigint AUTO_INCREMENT PRIMARY KEY,
     order_id              bigint                             not null,
     food_preparation_time int                                not null,
+    price                 decimal(18, 6)                     not null,
+    quantity              int                                not null,
     created_time          datetime default CURRENT_TIMESTAMP null,
     updated_time          datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP
 );
