@@ -9,6 +9,7 @@ import com.eatfull.buyerorder.feigns.StockClient;
 import com.eatfull.buyerorder.infrastructure.entity.MessageHistory;
 import com.eatfull.buyerorder.infrastructure.entity.OrderItem;
 import com.eatfull.buyerorder.infrastructure.exceptions.OrderCancelFailedException;
+import com.eatfull.buyerorder.infrastructure.exceptions.OrderCreationFailedException;
 import com.eatfull.buyerorder.infrastructure.repository.MessageHistoryRepository;
 import com.eatfull.buyerorder.infrastructure.repository.OrderRepository;
 import com.eatfull.buyerorder.message.MessageSender;
@@ -156,5 +157,16 @@ public class OrderServiceTest extends IntegrationTest {
 
         assertEquals(1, savedOrderId.longValue());
 
+    }
+
+    @Test
+    void should_throw_exception_when_create_order_given_stock_not_enough() {
+        StockClient stubStockClient = Mockito.mock(StockClient.class);
+        ReflectionTestUtils.setField(orderService, "stockClient", stubStockClient);
+        Mockito.when(stubStockClient.reserve(any())).thenReturn(false);
+        OrderModel orderModel = OrderModel.builder().orderItemModels(new ArrayList<>()).build();
+
+        OrderCreationFailedException orderCreationFailedException = assertThrows(OrderCreationFailedException.class, () -> orderService.createOrder(orderModel));
+        assertEquals("库存不足", orderCreationFailedException.getMessage());
     }
 }
