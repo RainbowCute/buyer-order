@@ -11,7 +11,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class FoodDto {
-    private Long id;
-    private Integer quantity;
+public class ReserveStockResponseDto {
+    private boolean success;
 }

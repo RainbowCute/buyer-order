@@ -31,7 +31,7 @@ import java.util.List;
 @Table(name = "buyer_order")
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private  Long userId;

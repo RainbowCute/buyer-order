@@ -5,7 +5,8 @@ import com.eatfull.buyerorder.enums.MessageSendStatus;
 import com.eatfull.buyerorder.enums.MessageType;
 import com.eatfull.buyerorder.enums.OrderStatus;
 import com.eatfull.buyerorder.feigns.StockClient;
-import com.eatfull.buyerorder.feigns.dto.FoodDto;
+import com.eatfull.buyerorder.feigns.dto.ReserveStockRequestDto;
+import com.eatfull.buyerorder.feigns.dto.ReserveStockResponseDto;
 import com.eatfull.buyerorder.infrastructure.entity.MessageHistory;
 import com.eatfull.buyerorder.infrastructure.entity.Order;
 import com.eatfull.buyerorder.infrastructure.entity.OrderItem;
@@ -86,9 +87,10 @@ public class OrderService {
         return savedOrder.getId();
     }
 
-    private boolean reserveStock(List<FoodDto> foodDtos) {
+    private boolean reserveStock(List<ReserveStockRequestDto> reserveStockRequestDtos) {
         try {
-            return stockClient.reserve(foodDtos);
+            ReserveStockResponseDto reserveStockResponseDto = stockClient.reserve(reserveStockRequestDtos);
+            return reserveStockResponseDto.isSuccess();
         } catch (Exception e) {
             log.error("stock service unavailable: ", e);
             throw new StockServiceUnavailableException("STOCK_SERVICE_UNAVAILABLE", "库存服务不可用，请稍后再试");

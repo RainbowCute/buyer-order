@@ -1,6 +1,7 @@
 package com.eatfull.buyerorder.feigns;
 
-import com.eatfull.buyerorder.feigns.dto.FoodDto;
+import com.eatfull.buyerorder.feigns.dto.ReserveStockRequestDto;
+import com.eatfull.buyerorder.feigns.dto.ReserveStockResponseDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,5 +12,5 @@ import java.util.List;
 public interface StockClient {
 
     @PostMapping("/reserve")
-    boolean reserve(@RequestBody List<FoodDto> foodDtos);
+    ReserveStockResponseDto reserve(@RequestBody List<ReserveStockRequestDto> foodDtos);
 }
