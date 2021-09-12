@@ -5,18 +5,21 @@ import com.eatfull.buyerorder.builder.OrderBuilder;
 import com.eatfull.buyerorder.enums.MessageSendStatus;
 import com.eatfull.buyerorder.enums.MessageType;
 import com.eatfull.buyerorder.enums.OrderStatus;
+import com.eatfull.buyerorder.feigns.StockClient;
 import com.eatfull.buyerorder.infrastructure.entity.MessageHistory;
 import com.eatfull.buyerorder.infrastructure.entity.OrderItem;
 import com.eatfull.buyerorder.infrastructure.exceptions.OrderCancelFailedException;
 import com.eatfull.buyerorder.infrastructure.repository.MessageHistoryRepository;
 import com.eatfull.buyerorder.infrastructure.repository.OrderRepository;
 import com.eatfull.buyerorder.message.MessageSender;
+import com.eatfull.buyerorder.model.OrderModel;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -134,5 +137,24 @@ public class OrderServiceTest extends IntegrationTest {
         assertEquals(1, messageHistories.size());
         assertEquals(MessageType.ORDER_CANCELLATION, messageHistories.get(0).getType());
         assertEquals(MessageSendStatus.SEND_FAIL, messageHistories.get(0).getStatus());
+    }
+
+    @Test
+    void should_return_order_id_when_create_order_given_order_info_and_stock_client_return_true() {
+        Long orderId = 1L;
+        OrderRepository stubOrderRepository = Mockito.mock(OrderRepository.class);
+        StockClient stubStockClient = Mockito.mock(StockClient.class);
+        ReflectionTestUtils.setField(orderService, "orderRepository", stubOrderRepository);
+        ReflectionTestUtils.setField(orderService, "stockClient", stubStockClient);
+        Mockito.when(stubOrderRepository.save(any())).thenReturn(OrderBuilder.withDefault()
+                                                                         .withId(orderId)
+                                                                         .build());
+        Mockito.when(stubStockClient.reserve(any())).thenReturn(true);
+        OrderModel orderModel = OrderModel.builder().orderItemModels(new ArrayList<>()).build();
+
+        Long savedOrderId = orderService.createOrder(orderModel);
+
+        assertEquals(1, savedOrderId.longValue());
+
     }
 }

@@ -9,6 +9,7 @@ import com.eatfull.buyerorder.infrastructure.entity.MessageHistory;
 import com.eatfull.buyerorder.infrastructure.entity.Order;
 import com.eatfull.buyerorder.infrastructure.entity.OrderItem;
 import com.eatfull.buyerorder.infrastructure.exceptions.OrderCancelFailedException;
+import com.eatfull.buyerorder.infrastructure.exceptions.OrderCreationFailedException;
 import com.eatfull.buyerorder.infrastructure.repository.MessageHistoryRepository;
 import com.eatfull.buyerorder.infrastructure.repository.OrderRepository;
 import com.eatfull.buyerorder.message.MessageSender;
@@ -72,7 +73,12 @@ public class OrderService {
     }
 
     public Long createOrder(OrderModel orderModel) {
-        return null;
+        boolean reserve = stockClient.reserve(OrderServiceConverter.toFoodDto(orderModel));
+        if (!reserve) {
+            throw new OrderCreationFailedException("STOCK_NOT_ENOUGH", "库存不足");
+        }
+        Order savedOrder = orderRepository.save(OrderServiceConverter.toEntity(orderModel));
+        return savedOrder.getId();
     }
 
 }
