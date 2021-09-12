@@ -5,11 +5,13 @@ import com.eatfull.buyerorder.enums.MessageSendStatus;
 import com.eatfull.buyerorder.enums.MessageType;
 import com.eatfull.buyerorder.enums.OrderStatus;
 import com.eatfull.buyerorder.feigns.StockClient;
+import com.eatfull.buyerorder.feigns.dto.FoodDto;
 import com.eatfull.buyerorder.infrastructure.entity.MessageHistory;
 import com.eatfull.buyerorder.infrastructure.entity.Order;
 import com.eatfull.buyerorder.infrastructure.entity.OrderItem;
 import com.eatfull.buyerorder.infrastructure.exceptions.OrderCancelFailedException;
 import com.eatfull.buyerorder.infrastructure.exceptions.OrderCreationFailedException;
+import com.eatfull.buyerorder.infrastructure.exceptions.StockServiceUnavailableException;
 import com.eatfull.buyerorder.infrastructure.repository.MessageHistoryRepository;
 import com.eatfull.buyerorder.infrastructure.repository.OrderRepository;
 import com.eatfull.buyerorder.message.MessageSender;
@@ -19,6 +21,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @AllArgsConstructor
@@ -73,12 +76,20 @@ public class OrderService {
     }
 
     public Long createOrder(OrderModel orderModel) {
-        boolean reserve = stockClient.reserve(OrderServiceConverter.toFoodDto(orderModel));
+        boolean reserve = reserveStock(OrderServiceConverter.toFoodDto(orderModel));
         if (!reserve) {
             throw new OrderCreationFailedException("STOCK_NOT_ENOUGH", "库存不足");
         }
         Order savedOrder = orderRepository.save(OrderServiceConverter.toEntity(orderModel));
         return savedOrder.getId();
+    }
+
+    private boolean reserveStock(List<FoodDto> foodDtos) {
+        try {
+            return stockClient.reserve(foodDtos);
+        } catch (Exception e) {
+            throw new StockServiceUnavailableException("STOCK_SERVICE_UNAVAILABLE", "库存服务不可用，请稍后再试");
+        }
     }
 
 }

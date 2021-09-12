@@ -6,6 +6,7 @@ import com.eatfull.buyerorder.controller.dto.OrderCreationRequestDto;
 import com.eatfull.buyerorder.controller.dto.OrderItemRequestDto;
 import com.eatfull.buyerorder.infrastructure.exceptions.OrderCancelFailedException;
 import com.eatfull.buyerorder.infrastructure.exceptions.OrderCreationFailedException;
+import com.eatfull.buyerorder.infrastructure.exceptions.StockServiceUnavailableException;
 import com.eatfull.buyerorder.service.OrderService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -106,5 +107,24 @@ public class OrderControllerTest extends IntegrationTest {
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code", is("STOCK_NOT_ENOUGH")))
                 .andExpect(jsonPath("$.message", is("库存不足")));
+    }
+
+    @Test
+    void should_throw_exception_when_create_order_given_order_service_throw_order_stock_feign_exception() throws Exception {
+        Mockito.when(orderService.createOrder(any())).thenThrow(new StockServiceUnavailableException("STOCK_SERVICE_UNAVAILABLE", "库存服务不可用，请稍后再试"));
+        OrderCreationRequestDto orderCreationRequestDto = OrderCreationRequestDto.builder()
+                .orderItemDtos(Collections.singletonList(OrderItemRequestDto.builder()
+                                                                 .foodPreparationTime(10)
+                                                                 .price(BigDecimal.valueOf(20))
+                                                                 .quantity(1).build()))
+                .build();
+        String requestJson = JSONObject.toJSONString(orderCreationRequestDto);
+
+        mockMvc.perform(post("/buyer/food-proposals/{id}/order", 1)
+                                .content(requestJson)
+                                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.code", is("STOCK_SERVICE_UNAVAILABLE")))
+                .andExpect(jsonPath("$.message", is("库存服务不可用，请稍后再试")));
     }
 }
