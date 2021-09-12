@@ -60,4 +60,23 @@ public class OrderRepositoryTest extends IntegrationTest {
         assertEquals(MessageSendStatus.SEND_FAIL, savedMessageHistory.getStatus());
         assertEquals(MessageType.ORDER_CANCELLATION, savedMessageHistory.getType());
     }
+
+    @Test
+    void should_save_order_success_when_save_order_given_order_info() {
+        Order order = OrderBuilder.withDefault()
+                .withId(1L)
+                .withUserId(1L)
+                .withAcceptanceOrderTime(LocalDateTime.now().minusMinutes(30))
+                .withOrderItems(Collections.singletonList(OrderItem.builder()
+                                                                  .foodPreparationTime(10)
+                                                                  .price(BigDecimal.valueOf(10))
+                                                                  .quantity(1)
+                                                                  .build()))
+                .withStatus(OrderStatus.GENERATED)
+                .build();
+
+        Order savedOrder = orderRepository.save(order);
+
+        assertEquals(OrderStatus.GENERATED, savedOrder.getStatus());
+    }
 }
