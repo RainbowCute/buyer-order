@@ -27,4 +27,4 @@ server:
 
 feign:
   stock:
-    url: http://localhost:8082
+    url:  http://localhost:7300/mock/613dbf4f98a80d0027074696/stock

@@ -1,5 +1,6 @@
 package com.eatfull.buyerorder.model;
 
+import com.eatfull.buyerorder.enums.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,5 +17,6 @@ import java.util.List;
 @Builder
 public class OrderModel {
     private LocalDateTime acceptanceOrderTime;
+    private OrderStatus status;
     List<OrderItemModel> orderItemModels;
 }

@@ -10,6 +10,8 @@ public class OrderControllerConverter {
 
     public static OrderModel toModel(OrderCreationRequestDto orderCreationRequestDto) {
         return OrderModel.builder()
+                .acceptanceOrderTime(orderCreationRequestDto.getAcceptanceOrderTime())
+                .status(orderCreationRequestDto.getStatus())
                 .orderItemModels(orderCreationRequestDto.getOrderItemDtos().stream()
                                          .map(item -> OrderItemModel.builder()
                                                  .quantity(item.getQuantity())

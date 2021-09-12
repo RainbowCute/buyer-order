@@ -1,6 +1,5 @@
 package com.eatfull.buyerorder.service;
 
-import com.eatfull.buyerorder.enums.OrderStatus;
 import com.eatfull.buyerorder.feigns.dto.FoodDto;
 import com.eatfull.buyerorder.infrastructure.entity.Order;
 import com.eatfull.buyerorder.infrastructure.entity.OrderItem;
@@ -23,7 +22,7 @@ public class OrderServiceConverter {
     public static Order toEntity(OrderModel orderModel) {
         return Order.builder()
                 .acceptanceOrderTime(orderModel.getAcceptanceOrderTime())
-                .status(OrderStatus.GENERATED)
+                .status(orderModel.getStatus())
                 .orderItems(orderModel.getOrderItemModels().stream()
                                     .map(item -> OrderItem.builder()
                                             .quantity(item.getQuantity())

@@ -18,6 +18,7 @@ import com.eatfull.buyerorder.message.MessageSender;
 import com.eatfull.buyerorder.message.dto.OrderCancellationMessage;
 import com.eatfull.buyerorder.model.OrderModel;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Service
+@Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -88,6 +90,7 @@ public class OrderService {
         try {
             return stockClient.reserve(foodDtos);
         } catch (Exception e) {
+            log.error("stock service unavailable: ", e);
             throw new StockServiceUnavailableException("STOCK_SERVICE_UNAVAILABLE", "库存服务不可用，请稍后再试");
         }
     }
