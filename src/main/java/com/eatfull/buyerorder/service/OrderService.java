@@ -21,6 +21,7 @@ import com.eatfull.buyerorder.model.OrderModel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,6 +37,7 @@ public class OrderService {
     private final MessageSender messageSender;
     private final StockClient stockClient;
 
+    @Transactional
     public boolean cancelOrder(Long id) {
         Optional<Order> orderOptional = orderRepository.findById(id);
         if (!orderOptional.isPresent()) {
@@ -78,6 +80,7 @@ public class OrderService {
                                               .build());
     }
 
+    @Transactional
     public Long createOrder(OrderModel orderModel) {
         boolean reserve = reserveStock(OrderServiceConverter.toFoodDto(orderModel));
         if (!reserve) {
